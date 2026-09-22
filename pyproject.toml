@@ -40,7 +40,7 @@ where = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-src = ["src", "tests", "tools"]
+src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP", "SIM"]
@@ -52,11 +52,15 @@ indent-style = "space"
 [tool.mypy]
 python_version = "3.14"
 strict = true
-files = ["src", "tests", "tools"]
+files = ["src", "tests"]
 warn_unused_configs = true
 disallow_any_generics = true
 no_implicit_optional = true
 exclude = ["^build/", "^dist/"]
+
+[[tool.mypy.overrides]]
+module = ["yaml"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = "-ra"

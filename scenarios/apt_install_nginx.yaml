@@ -1,0 +1,23 @@
+id: packages.install_nginx
+title: установить nginx
+level: beginner
+topic: packages
+role: root@ubuntu-srv-01:~#
+objective: установить nginx через apt и проверить, что пакет добавлен
+command_rules:
+  - executable: apt
+    aliases: [apt-get]
+    required_subcommands: [install]
+    required_arguments: [nginx]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: для установки пакетов в debian и ubuntu используется менеджер apt
+    progress_penalty: 0
+  - level: tools
+    text: понадобятся apt и подкоманда install, после нее укажи имя пакета nginx
+    progress_penalty: 5
+  - level: solution
+    text: используй команду apt install nginx
+    progress_penalty: 15
+success_explanation: apt передал менеджеру пакетов запрос на установку nginx и проверил зависимости
