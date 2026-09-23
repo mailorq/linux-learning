@@ -1,5 +1,5 @@
 import shlex
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -43,6 +43,7 @@ class _Token:
 def parse_command(
     text: str,
     flag_aliases: Mapping[str, str] | None = None,
+    value_flags_by_executable: Mapping[str, Collection[str]] | None = None,
 ) -> ParsedCommandLine:
     tokens = _tokenize(text)
     segments: list[CommandSegment] = []
@@ -55,7 +56,9 @@ def parse_command(
         if token.operator and token.value == "|":
             if not words:
                 raise CommandParseError("пайп не может начинаться или повторяться")
-            segments.append(_build_segment(words, redirections, flag_aliases))
+            segments.append(
+                _build_segment(words, redirections, flag_aliases, value_flags_by_executable)
+            )
             words = []
             redirections = []
             index += 1
@@ -88,7 +91,7 @@ def parse_command(
 
     if not words:
         raise CommandParseError("команда отсутствует после пайпа")
-    segments.append(_build_segment(words, redirections, flag_aliases))
+    segments.append(_build_segment(words, redirections, flag_aliases, value_flags_by_executable))
     return ParsedCommandLine(tuple(segments))
 
 
@@ -179,11 +182,19 @@ def _build_segment(
     words: list[_Token],
     redirections: list[Redirection],
     flag_aliases: Mapping[str, str] | None,
+    value_flags_by_executable: Mapping[str, Collection[str]] | None,
 ) -> CommandSegment:
     executable = words[0].value
     if not executable:
         raise CommandParseError("имя утилиты не может быть пустым")
-    arguments = _normalize_arguments(tuple(word.value for word in words[1:]), flag_aliases)
+    value_flags = (
+        value_flags_by_executable.get(executable, ())
+        if value_flags_by_executable is not None
+        else ()
+    )
+    arguments = _normalize_arguments(
+        tuple(word.value for word in words[1:]), flag_aliases, value_flags
+    )
     flags: list[str] = []
     positionals: list[str] = []
     options = True
@@ -207,18 +218,45 @@ def _build_segment(
 def _normalize_arguments(
     arguments: tuple[str, ...],
     flag_aliases: Mapping[str, str] | None,
+    value_flags: Collection[str] = (),
 ) -> tuple[str, ...]:
     aliases = flag_aliases or {}
+    value_options = {aliases.get(flag, flag) for flag in value_flags}
     normalized: list[str] = []
+    options = True
     for argument in arguments:
+        if not options:
+            normalized.append(argument)
+            continue
+        if argument == "--":
+            normalized.append(argument)
+            options = False
+            continue
+        if argument.startswith("--") and "=" in argument:
+            flag, value = argument.split("=", maxsplit=1)
+            normalized.extend((aliases.get(flag, flag), value))
+            continue
+
         argument = aliases.get(argument, argument)
-        if (
-            len(argument) > 2
-            and argument.startswith("-")
-            and not argument.startswith("--")
-            and argument[1:].isalnum()
-        ):
-            normalized.extend(f"-{char}" for char in argument[1:])
+        if len(argument) > 2 and argument.startswith("-") and not argument.startswith("--"):
+            tail = argument[1:]
+            expanded: list[str] = []
+            for index, char in enumerate(tail):
+                if not char.isascii() or not char.isalpha():
+                    normalized.append(argument)
+                    break
+                flag = aliases.get(f"-{char}", f"-{char}")
+                expanded.append(flag)
+                if flag in value_options:
+                    value = tail[index + 1 :]
+                    if value.startswith("="):
+                        value = value[1:]
+                    if value:
+                        expanded.append(value)
+                    normalized.extend(expanded)
+                    break
+            else:
+                normalized.extend(expanded)
             continue
         normalized.append(argument)
     return tuple(normalized)

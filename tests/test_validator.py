@@ -36,6 +36,22 @@ def test_validate_command_accepts_flag_order_and_aliases() -> None:
     assert result.issues == ()
 
 
+def test_validate_command_accepts_attached_value_in_short_flag_group() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="tar",
+            value_flags=("-f",),
+            required_flags=("-c", "-z", "-f"),
+            required_arguments=("archive.tar.gz", "./dir"),
+            allow_extra_arguments=False,
+        )
+    )
+
+    result = validate_command("tar -czfarchive.tar.gz ./dir", scenario)
+
+    assert result.valid
+
+
 def test_validate_command_reports_wrong_tool() -> None:
     scenario = make_scenario(CommandRule(executable="systemctl"))
 

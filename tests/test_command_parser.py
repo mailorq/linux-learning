@@ -13,6 +13,25 @@ def test_parse_command_splits_flags_and_applies_aliases() -> None:
     assert segment.positionals == ("./logs",)
 
 
+def test_parse_command_keeps_attached_value_after_short_flag() -> None:
+    command = parse_command(
+        "tar -czfarchive.tar.gz ./dir",
+        value_flags_by_executable={"tar": ("-f",)},
+    )
+
+    segment = command.segments[0]
+    assert segment.flags == ("-c", "-z", "-f")
+    assert segment.positionals == ("archive.tar.gz", "./dir")
+
+
+def test_parse_command_preserves_arguments_after_option_terminator() -> None:
+    command = parse_command("grep -- --color=always")
+
+    segment = command.segments[0]
+    assert segment.flags == ()
+    assert segment.positionals == ("--color=always",)
+
+
 def test_parse_command_preserves_pipeline_and_redirections() -> None:
     command = parse_command("journalctl -u nginx | grep -i error >> errors.log 2>&1")
 

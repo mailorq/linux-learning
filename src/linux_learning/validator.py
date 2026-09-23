@@ -33,7 +33,11 @@ class ValidationResult:
 
 def validate_command(text: str, scenario: Scenario) -> ValidationResult:
     try:
-        parsed = parse_command(text)
+        value_flags_by_executable: dict[str, set[str]] = {}
+        for rule in scenario.command_rules:
+            for executable in (rule.executable, *rule.aliases):
+                value_flags_by_executable.setdefault(executable, set()).update(rule.value_flags)
+        parsed = parse_command(text, value_flags_by_executable=value_flags_by_executable)
     except CommandParseError as exc:
         issue = ValidationIssue(IssueKind.SYNTAX, str(exc))
         return ValidationResult(False, (issue,))

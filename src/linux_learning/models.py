@@ -40,6 +40,7 @@ class CommandRule(BaseModel):
     required_subcommands: tuple[str, ...] = ()
     required_flags: tuple[str, ...] = ()
     forbidden_flags: tuple[str, ...] = ()
+    value_flags: tuple[str, ...] = ()
     required_arguments: tuple[str, ...] = ()
     allow_extra_arguments: bool = True
 
@@ -48,6 +49,7 @@ class CommandRule(BaseModel):
         "required_subcommands",
         "required_flags",
         "forbidden_flags",
+        "value_flags",
         "required_arguments",
         mode="after",
     )
@@ -59,6 +61,16 @@ class CommandRule(BaseModel):
         if len(set(cleaned)) != len(cleaned):
             raise ValueError("элементы ограничений не должны повторяться")
         return cleaned
+
+    @field_validator("value_flags")
+    @classmethod
+    def validate_value_flags(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if any(
+            len(flag) != 2 or not flag.startswith("-") or flag.startswith("--")
+            for flag in value
+        ):
+            raise ValueError("флаги со значением должны быть короткими")
+        return value
 
     @field_validator("flag_aliases")
     @classmethod
