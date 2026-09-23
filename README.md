@@ -41,6 +41,15 @@ python -m pip install -e ".[dev]"
 linux-learning
 ```
 
+## Генерация черновиков сценариев
+
+Генератор читает локальные markdown-страницы tldr для Linux. Сеть ему не нужна. Черновики создаются отдельно от каталога `scenarios` и не используются тренажером до редакторской проверки.
+
+```text
+python -m linux_learning.scenario_generator путь/к/tldr/pages/linux --output-dir scenario-drafts
+```
+
+По умолчанию выбираются страницы `apt`, `systemctl`, `journalctl`, `ip`, `ss`, `ufw`, `chmod`, `chown`, `tar`, `grep`, `sed`, `awk` и `docker`. Повторная генерация не перезаписывает существующие черновики; для явной перезаписи передайте `--overwrite`.
 
 ## Проверка качества
 
