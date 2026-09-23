@@ -36,6 +36,7 @@ class CommandRule(BaseModel):
     executable: str = Field(min_length=1)
     aliases: tuple[str, ...] = ()
     flag_aliases: dict[str, str] = Field(default_factory=dict)
+    flag_descriptions: dict[str, str] = Field(default_factory=dict)
     required_subcommands: tuple[str, ...] = ()
     required_flags: tuple[str, ...] = ()
     forbidden_flags: tuple[str, ...] = ()
@@ -67,6 +68,14 @@ class CommandRule(BaseModel):
             raise ValueError("синонимы флагов не могут быть пустыми")
         if len(cleaned) != len(value):
             raise ValueError("синонимы флагов не должны повторяться")
+        return cleaned
+
+    @field_validator("flag_descriptions")
+    @classmethod
+    def validate_flag_descriptions(cls, value: dict[str, str]) -> dict[str, str]:
+        cleaned = {key.strip(): description.strip() for key, description in value.items()}
+        if any(not key or not description for key, description in cleaned.items()):
+            raise ValueError("описания флагов не могут быть пустыми")
         return cleaned
 
     @model_validator(mode="after")
