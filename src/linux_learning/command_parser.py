@@ -1,7 +1,7 @@
+import shlex
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
-import shlex
 
 from linux_learning.errors import CommandParseError
 
@@ -111,7 +111,7 @@ def _tokenize(text: str) -> tuple[_Token, ...]:
             raise CommandParseError("ошибка кавычек или экранирования") from exc
         if len(values) != 1:
             raise CommandParseError("не удалось выделить аргумент команды")
-        fd = int(raw) if raw.isdigit() else None
+        fd = int(raw) if raw.isascii() and raw.isdigit() else None
         tokens.append(_Token(values[0], False, fd))
         word.clear()
 

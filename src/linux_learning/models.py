@@ -35,6 +35,7 @@ class CommandRule(BaseModel):
 
     executable: str = Field(min_length=1)
     aliases: tuple[str, ...] = ()
+    flag_aliases: dict[str, str] = Field(default_factory=dict)
     required_subcommands: tuple[str, ...] = ()
     required_flags: tuple[str, ...] = ()
     forbidden_flags: tuple[str, ...] = ()
@@ -56,6 +57,16 @@ class CommandRule(BaseModel):
             raise ValueError("элементы ограничений не могут быть пустыми")
         if len(set(cleaned)) != len(cleaned):
             raise ValueError("элементы ограничений не должны повторяться")
+        return cleaned
+
+    @field_validator("flag_aliases")
+    @classmethod
+    def validate_flag_aliases(cls, value: dict[str, str]) -> dict[str, str]:
+        cleaned = {key.strip(): alias.strip() for key, alias in value.items()}
+        if any(not key or not alias for key, alias in cleaned.items()):
+            raise ValueError("синонимы флагов не могут быть пустыми")
+        if len(cleaned) != len(value):
+            raise ValueError("синонимы флагов не должны повторяться")
         return cleaned
 
     @model_validator(mode="after")
