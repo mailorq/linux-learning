@@ -18,3 +18,7 @@ class ScenarioFormatError(ScenarioError):
         super().__init__(f"{path}: {message}")
         self.path = path
         self.message = message
+
+
+class CommandParseError(ValueError):
+    """ошибка синтаксиса команды"""
