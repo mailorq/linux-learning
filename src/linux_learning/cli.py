@@ -6,7 +6,7 @@ from pathlib import Path
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.history import FileHistory, InMemoryHistory
+from prompt_toolkit.history import FileHistory, History, InMemoryHistory
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -14,6 +14,7 @@ from rich.table import Table
 from linux_learning.errors import ScenarioError
 from linux_learning.feedback import FeedbackKind, build_feedback
 from linux_learning.models import Scenario
+from linux_learning.progress import ProgressStore, ProgressStoreError, ProgressSummary
 from linux_learning.scenario_loader import load_scenarios
 from linux_learning.validator import validate_command
 
@@ -36,6 +37,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=Path.home() / ".linux-learning" / "history",
     )
+    parser.add_argument(
+        "--progress-file",
+        type=Path,
+        default=Path.home() / ".linux-learning" / "progress.sqlite3",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -44,10 +50,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         Console().print(f"[red]{exc}[/red]")
         return 2
 
-    return run_session(scenarios, args.history_file)
+    console = Console()
+    try:
+        progress_store = ProgressStore(args.progress_file)
+    except ProgressStoreError as exc:
+        console.print(f"[yellow]{exc}; прогресс не будет сохранен[/yellow]")
+        progress_store = None
+    return run_session(scenarios, args.history_file, progress_store)
 
 
-def run_session(scenarios: Sequence[Scenario], history_file: Path) -> int:
+def run_session(
+    scenarios: Sequence[Scenario],
+    history_file: Path,
+    progress_store: ProgressStore | None = None,
+) -> int:
     console = Console()
     stats = SessionStats()
     session = _create_prompt_session(scenarios, history_file)
@@ -60,12 +76,12 @@ def run_session(scenarios: Sequence[Scenario], history_file: Path) -> int:
                 value = session.prompt(f"{scenario.role} ")
             except (EOFError, KeyboardInterrupt):
                 console.print("сессия завершена")
-                _show_stats(console, stats)
+                _finish_session(console, stats, progress_store)
                 return 0
 
             command = value.strip()
             if command in {":quit", ":exit"}:
-                _show_stats(console, stats)
+                _finish_session(console, stats, progress_store)
                 return 0
             if command == ":help":
                 console.print("[dim]:hint подсказка, :skip пропустить, :quit выйти[/dim]")
@@ -101,7 +117,7 @@ def run_session(scenarios: Sequence[Scenario], history_file: Path) -> int:
                 break
             stats.topic_errors[scenario.topic] += 1
 
-    _show_stats(console, stats)
+    _finish_session(console, stats, progress_store)
     return 0
 
 
@@ -112,6 +128,7 @@ def _create_prompt_session(
     words = {":help", ":hint", ":skip", ":quit", ":exit"}
     words.update(rule.executable for scenario in scenarios for rule in scenario.command_rules)
     completer = WordCompleter(sorted(words), sentence=True)
+    history: History
     try:
         history_file.parent.mkdir(parents=True, exist_ok=True)
         history = FileHistory(str(history_file))
@@ -137,7 +154,39 @@ def _show_feedback(
     console.print(Panel(text, title=title, border_style=style))
 
 
-def _show_stats(console: Console, stats: SessionStats) -> None:
+def _finish_session(
+    console: Console,
+    stats: SessionStats,
+    progress_store: ProgressStore | None,
+) -> None:
+    summary = None
+    if progress_store is not None:
+        if stats.attempts or stats.hints_used:
+            try:
+                progress_store.save_session(
+                    attempts=stats.attempts,
+                    solved=stats.solved,
+                    solved_without_hints=stats.solved_without_hints,
+                    hints_used=stats.hints_used,
+                    progress_penalty=stats.progress_penalty,
+                    topic_errors=stats.topic_errors,
+                )
+            except ProgressStoreError as exc:
+                console.print(f"[yellow]{exc}[/yellow]")
+        try:
+            summary = progress_store.load_summary()
+        except ProgressStoreError as exc:
+            console.print(f"[yellow]{exc}[/yellow]")
+        finally:
+            progress_store.close()
+    _show_stats(console, stats, summary)
+
+
+def _show_stats(
+    console: Console,
+    stats: SessionStats,
+    summary: ProgressSummary | None,
+) -> None:
     table = Table(title="статистика")
     table.add_column("показатель")
     table.add_column("значение")
@@ -149,8 +198,16 @@ def _show_stats(console: Console, stats: SessionStats) -> None:
     rate = 0 if stats.solved == 0 else round(stats.solved_without_hints / stats.solved * 100)
     table.add_row("процент без подсказок", f"{rate}%")
     console.print(table)
-    if stats.topic_errors:
+    if summary is not None:
+        console.print(
+            f"всего сессий: {summary.sessions}, попыток: {summary.attempts}, "
+            f"решено: {summary.solved}, штраф прогресса: {summary.progress_penalty}"
+        )
+    topic_errors = (
+        summary.topic_errors if summary is not None else tuple(stats.topic_errors.items())
+    )
+    if topic_errors:
         weak_topics = ", ".join(
-            f"{topic}: {count}" for topic, count in stats.topic_errors.most_common()
+            f"{topic}: {count}" for topic, count in topic_errors
         )
         console.print(f"слабые темы: {weak_topics}")

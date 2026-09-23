@@ -1,5 +1,5 @@
-from enum import StrEnum
 from dataclasses import dataclass
+from enum import StrEnum
 
 from linux_learning.command_parser import CommandSegment, ParsedCommandLine, parse_command
 from linux_learning.errors import CommandParseError

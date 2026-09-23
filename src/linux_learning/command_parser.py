@@ -212,9 +212,13 @@ def _normalize_arguments(
     normalized: list[str] = []
     for argument in arguments:
         argument = aliases.get(argument, argument)
-        if len(argument) > 2 and argument.startswith("-") and not argument.startswith("--"):
-            if argument[1:].isalnum():
-                normalized.extend(f"-{char}" for char in argument[1:])
-                continue
+        if (
+            len(argument) > 2
+            and argument.startswith("-")
+            and not argument.startswith("--")
+            and argument[1:].isalnum()
+        ):
+            normalized.extend(f"-{char}" for char in argument[1:])
+            continue
         normalized.append(argument)
     return tuple(normalized)
