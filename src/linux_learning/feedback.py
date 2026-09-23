@@ -39,6 +39,8 @@ _ISSUE_TITLES = {
 
 def build_feedback(result: ValidationResult, scenario: Scenario) -> Feedback:
     if not result.valid:
+        if not result.issues:
+            raise ValueError("для оишбочного результата отсутствуют причины")
         title = _ISSUE_TITLES[result.issues[0].kind]
         return Feedback(
             kind=FeedbackKind.ERROR,
