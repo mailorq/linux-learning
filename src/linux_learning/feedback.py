@@ -34,6 +34,8 @@ _ISSUE_TITLES = {
     IssueKind.FORBIDDEN_FLAG: "использован запрещенный флаг",
     IssueKind.MISSING_ARGUMENT: "пропущен обязательный аргумент",
     IssueKind.EXTRA_ARGUMENT: "лишний аргумент",
+    IssueKind.MISSING_REDIRECTION: "пропущено перенаправление",
+    IssueKind.EXTRA_REDIRECTION: "лишнее перенаправление",
 }
 
 

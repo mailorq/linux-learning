@@ -15,6 +15,8 @@ class IssueKind(StrEnum):
     FORBIDDEN_FLAG = "forbidden_flag"
     MISSING_ARGUMENT = "missing_argument"
     EXTRA_ARGUMENT = "extra_argument"
+    MISSING_REDIRECTION = "missing_redirection"
+    EXTRA_REDIRECTION = "extra_redirection"
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,7 +130,64 @@ def _validate_segment(
                 index,
             )
         )
+    issues.extend(_validate_redirections(segment, rule, index))
     return tuple(issues)
+
+
+def _validate_redirections(
+    segment: CommandSegment,
+    rule: CommandRule,
+    index: int,
+) -> tuple[ValidationIssue, ...]:
+    expected = tuple(
+        (redirection.source_fd, redirection.operator, redirection.target)
+        for redirection in rule.required_redirections
+    )
+    actual = tuple(
+        (
+            1 if redirection.source_fd is None else redirection.source_fd,
+            redirection.operator.value,
+            redirection.target,
+        )
+        for redirection in segment.redirections
+    )
+    issues: list[ValidationIssue] = []
+
+    if expected and not _is_subsequence(expected, actual):
+        description = ", ".join(_format_redirection(*item) for item in expected)
+        issues.append(
+            ValidationIssue(
+                IssueKind.MISSING_REDIRECTION,
+                f"ожидалась последовательность перенаправлений: {description}",
+                index,
+            )
+        )
+    if not rule.allow_extra_redirections and not _is_subsequence(actual, expected):
+        description = ", ".join(_format_redirection(*item) for item in actual)
+        issues.append(
+            ValidationIssue(
+                IssueKind.EXTRA_REDIRECTION,
+                f"неожиданная последовательность перенаправлений: {description}",
+                index,
+            )
+        )
+    return tuple(issues)
+
+
+def _is_subsequence(
+    candidate: tuple[tuple[int, str, str], ...],
+    sequence: tuple[tuple[int, str, str], ...],
+) -> bool:
+    position = 0
+    for item in sequence:
+        if position < len(candidate) and candidate[position] == item:
+            position += 1
+    return position == len(candidate)
+
+
+def _format_redirection(source_fd: int, operator: str, target: str) -> str:
+    prefix = "" if source_fd == 1 and operator != ">&" else str(source_fd)
+    return f"{prefix}{operator}{target}"
 
 
 def _canonical_flag(flag: str, rule: CommandRule) -> str:

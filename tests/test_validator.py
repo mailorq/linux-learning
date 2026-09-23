@@ -1,4 +1,11 @@
-from linux_learning.models import CommandRule, Hint, HintLevel, Scenario, ScenarioLevel
+from linux_learning.models import (
+    CommandRule,
+    Hint,
+    HintLevel,
+    RedirectionRule,
+    Scenario,
+    ScenarioLevel,
+)
 from linux_learning.validator import IssueKind, validate_command
 
 
@@ -11,10 +18,7 @@ def make_scenario(*rules: CommandRule) -> Scenario:
         role="root@test:~#",
         objective="проверить команду",
         command_rules=rules,
-        hints=tuple(
-            Hint(level=level, text=level.value)
-            for level in HintLevel
-        ),
+        hints=tuple(Hint(level=level, text=level.value) for level in HintLevel),
         success_explanation="команда корректна",
     )
 
@@ -87,6 +91,46 @@ def test_validate_command_checks_pipeline_shape() -> None:
     result = validate_command("journalctl -u nginx | grep -i error", scenario)
 
     assert result.valid
+
+
+def test_validate_command_checks_redirections_for_each_pipeline_segment() -> None:
+    scenario = make_scenario(
+        CommandRule(executable="journalctl"),
+        CommandRule(
+            executable="grep",
+            required_flags=("-i",),
+            required_arguments=("error",),
+            required_redirections=(
+                RedirectionRule(operator=">>", target="errors.log"),
+                RedirectionRule(source_fd=2, operator=">&", target="1"),
+            ),
+            allow_extra_redirections=False,
+        ),
+    )
+
+    result = validate_command(
+        "journalctl -u nginx | grep -i error >> errors.log 2>&1",
+        scenario,
+    )
+
+    assert result.valid
+
+
+def test_validate_command_reports_missing_and_extra_redirections() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="echo",
+            required_redirections=(RedirectionRule(operator=">", target="output.log"),),
+            allow_extra_redirections=False,
+        )
+    )
+
+    result = validate_command("echo ready > other.log", scenario)
+
+    assert [issue.kind for issue in result.issues] == [
+        IssueKind.MISSING_REDIRECTION,
+        IssueKind.EXTRA_REDIRECTION,
+    ]
 
 
 def test_validate_command_reports_syntax_error() -> None:

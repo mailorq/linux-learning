@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -28,6 +28,14 @@ class Hint(BaseModel):
     progress_penalty: int = Field(default=0, ge=0)
 
 
+class RedirectionRule(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    source_fd: int = Field(default=1, ge=0)
+    operator: Literal[">", ">>", ">&"]
+    target: str = Field(min_length=1)
+
+
 class CommandRule(BaseModel):
     """ограничения для 1 элемента команды"""
 
@@ -42,7 +50,9 @@ class CommandRule(BaseModel):
     forbidden_flags: tuple[str, ...] = ()
     value_flags: tuple[str, ...] = ()
     required_arguments: tuple[str, ...] = ()
+    required_redirections: tuple[RedirectionRule, ...] = ()
     allow_extra_arguments: bool = True
+    allow_extra_redirections: bool = True
 
     @field_validator(
         "aliases",
@@ -66,8 +76,7 @@ class CommandRule(BaseModel):
     @classmethod
     def validate_value_flags(cls, value: tuple[str, ...]) -> tuple[str, ...]:
         if any(
-            len(flag) != 2 or not flag.startswith("-") or flag.startswith("--")
-            for flag in value
+            len(flag) != 2 or not flag.startswith("-") or flag.startswith("--") for flag in value
         ):
             raise ValueError("флаги со значением должны быть короткими")
         return value
