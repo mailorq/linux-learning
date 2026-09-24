@@ -1,0 +1,27 @@
+id: packages.simulate_upgrade
+title: проверить план обновления пакетов
+level: intermediate
+topic: packages
+role: root@ubuntu-srv-01:~#
+objective: нужно посмотреть, какие действия выполнит обновление пакетов, не применяя их
+command_rules:
+  - executable: apt-get
+    required_subcommands: [upgrade]
+    required_flags: [-s]
+    flag_aliases:
+      --simulate: -s
+      --dry-run: -s
+    flag_descriptions:
+      "-s": выполняет симуляцию без изменения системы
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: apt-get может показать план операции без фактического изменения установленных пакетов
+    progress_penalty: 0
+  - level: tools
+    text: используй apt-get upgrade с флагом симуляции -s или --simulate
+    progress_penalty: 5
+  - level: solution
+    text: используй команду apt-get -s upgrade
+    progress_penalty: 15
+success_explanation: apt-get показал план обновления без установки или удаления пакетов

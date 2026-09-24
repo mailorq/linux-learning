@@ -1,0 +1,22 @@
+id: containers.inspect_web
+title: посмотреть параметры контейнера web
+level: intermediate
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно получить подробные настройки контейнера с именем web
+command_rules:
+  - executable: docker
+    required_subcommands: [inspect]
+    required_arguments: [web]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: docker inspect показывает конфигурацию выбранного объекта без изменения его состояния
+    progress_penalty: 0
+  - level: tools
+    text: используй docker inspect и передай имя контейнера web
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker inspect web
+    progress_penalty: 15
+success_explanation: docker inspect вывел подробные структурированные сведения о контейнере web, не изменяя его состояние

@@ -1,0 +1,25 @@
+id: services.enable_nginx
+title: включить nginx при запуске и запустить сейчас
+level: intermediate
+topic: services
+role: root@ubuntu-srv-01:~#
+objective: нужно включить запуск nginx при старте системы и запустить его сейчас
+command_rules:
+  - executable: systemctl
+    required_subcommands: [enable]
+    required_flags: [--now]
+    flag_descriptions:
+      "--now": сразу запускает юнит после включения
+    required_arguments: [nginx]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: включение юнита и его немедленный запуск решаются одной командой systemctl
+    progress_penalty: 0
+  - level: tools
+    text: укажи enable, флаг --now и имя юнита nginx
+    progress_penalty: 5
+  - level: solution
+    text: используй команду systemctl enable --now nginx
+    progress_penalty: 15
+success_explanation: systemctl включил nginx для последующих запусков системы и запустил его в текущем сеансе

@@ -8,9 +8,13 @@ _REFERENCE_SOLUTIONS = {
     "packages.update_index": "apt update",
     "services.restart_nginx": "systemctl restart nginx",
     "services.check_nginx": "systemctl is-active nginx",
+    "services.enable_nginx": "systemctl enable --now nginx",
+    "services.failed_units": "systemctl --failed --no-pager",
+    "services.reload_manager": "systemctl daemon-reload",
     "logging.filter_nginx_errors": (
         "journalctl -u nginx | grep -i error > /var/log/nginx-errors.log 2>&1"
     ),
+    "logging.search_error_patterns": "grep -Ein 'error|failed' /var/log/syslog",
     "network.listening_tcp": "ss -ltnp",
     "network.allow_https": "ufw allow 443/tcp",
     "network.show_routes": "ip route show",
@@ -19,6 +23,8 @@ _REFERENCE_SOLUTIONS = {
     "files.archive_web_root": "tar -czf /var/backups/site.tar.gz /var/www/html",
     "diagnostics.root_usage": "df --human-readable /",
     "containers.list_all": "docker ps --all",
+    "containers.inspect_web": "docker inspect web",
+    "packages.simulate_upgrade": "apt-get -s upgrade",
 }
 
 

@@ -1,0 +1,21 @@
+id: services.reload_manager
+title: перечитать конфигурацию systemd
+level: advanced
+topic: services
+role: root@ubuntu-srv-01:~#
+objective: нужно сообщить systemd об измененных файлах описания юнитов, не перезапуская сервисы
+command_rules:
+  - executable: systemctl
+    required_subcommands: [daemon-reload]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: после изменения unit-файла менеджеру systemd нужно перечитать определения юнитов
+    progress_penalty: 0
+  - level: tools
+    text: используй systemctl с действием daemon-reload
+    progress_penalty: 5
+  - level: solution
+    text: используй команду systemctl daemon-reload
+    progress_penalty: 15
+success_explanation: systemd перечитал файлы описания юнитов; сами запущенные сервисы эта команда не перезапускает

@@ -1,0 +1,24 @@
+id: services.failed_units
+title: найти юниты в состоянии ошибки
+level: intermediate
+topic: services
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести список упавших systemd-юнитов без открытия постраничного просмотрщика
+command_rules:
+  - executable: systemctl
+    required_flags: [--failed, --no-pager]
+    flag_descriptions:
+      "--failed": ограничивает список юнитами в состоянии ошибки
+      "--no-pager": выводит результат напрямую в терминал
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: systemctl умеет отбирать юниты по состоянию и выводить результат без pager
+    progress_penalty: 0
+  - level: tools
+    text: нужны флаги --failed и --no-pager
+    progress_penalty: 5
+  - level: solution
+    text: используй команду systemctl --failed --no-pager
+    progress_penalty: 15
+success_explanation: systemctl показал только юниты в состоянии ошибки и оставил вывод в текущем терминале

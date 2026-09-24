@@ -1,0 +1,30 @@
+id: logging.search_error_patterns
+title: найти ошибки и сбои в системном журнале
+level: advanced
+topic: logging
+role: root@ubuntu-srv-01:~#
+objective: нужно найти строки со словами error или failed в системном журнале без учета регистра и показать их номера
+command_rules:
+  - executable: grep
+    required_flags: [-E, -i, -n]
+    flag_aliases:
+      --extended-regexp: -E
+      --ignore-case: -i
+      --line-number: -n
+    flag_descriptions:
+      "-E": включает расширенные регулярные выражения для выбора нескольких шаблонов
+      "-i": выполняет поиск без учета регистра
+      "-n": добавляет номер исходной строки к совпадению
+    required_arguments: ["error|failed", /var/log/syslog]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: grep может искать альтернативы в одном регулярном выражении, игнорировать регистр и нумеровать строки
+    progress_penalty: 0
+  - level: tools
+    text: нужны флаги -E, -i и -n, шаблон error|failed и файл /var/log/syslog
+    progress_penalty: 5
+  - level: solution
+    text: используй команду grep -Ein 'error|failed' /var/log/syslog
+    progress_penalty: 15
+success_explanation: grep применил расширенное выражение error|failed, нашел варианты в любом регистре и вывел номера строк
