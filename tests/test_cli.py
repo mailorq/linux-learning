@@ -1,11 +1,21 @@
 from pathlib import Path
 from typing import NoReturn
+from uuid import uuid4
 
 import pytest
 
 from linux_learning import cli
 from linux_learning.models import Scenario, ScenarioLevel
+from linux_learning.progress import ProgressStore
 from linux_learning.scenario_loader import load_scenario
+
+
+class PromptQueue:
+    def __init__(self, commands: list[str]) -> None:
+        self._commands = iter(commands)
+
+    def prompt(self, _: str) -> str:
+        return next(self._commands)
 
 
 @pytest.fixture
@@ -72,3 +82,30 @@ def test_main_rejects_blank_topic(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cli, "ProgressStore", fail_progress_store)
 
     assert cli.main(["--topic", "  "]) == 2
+
+
+def test_run_session_saves_attempts_hints_and_topic_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scenario = load_scenario(Path("scenarios/apt_install_nginx.yaml"))
+    prompts = PromptQueue([":hint", ":hint", "apt remove nginx", "apt install nginx"])
+    monkeypatch.setattr(cli, "_create_prompt_session", lambda *_: prompts)
+    progress_path = Path.cwd() / f".session-test-{uuid4().hex}.sqlite3"
+    store = ProgressStore(progress_path)
+
+    try:
+        assert cli.run_session((scenario,), Path("unused-history"), store) == 0
+        summary_store = ProgressStore(progress_path)
+        try:
+            summary = summary_store.load_summary()
+        finally:
+            summary_store.close()
+    finally:
+        progress_path.unlink(missing_ok=True)
+
+    assert summary.attempts == 2
+    assert summary.solved == 1
+    assert summary.solved_without_hints == 0
+    assert summary.hints_used == 2
+    assert summary.progress_penalty == 5
+    assert summary.topic_errors == (("packages", 1),)
