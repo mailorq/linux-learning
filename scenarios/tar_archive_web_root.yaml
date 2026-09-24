@@ -8,6 +8,7 @@ command_rules:
   - executable: tar
     value_flags: [-f]
     required_flags: [-c, -z, -f]
+    conflicting_flag_pairs: [["-c", "-x"]]
     flag_descriptions:
       "-c": создает новый архив
       "-z": использует gzip сжатие

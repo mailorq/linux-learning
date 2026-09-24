@@ -155,3 +155,18 @@ def test_validate_command_rejects_required_arguments_in_wrong_order() -> None:
 
     assert not result.valid
     assert result.issues[0].kind == IssueKind.ARGUMENT_ORDER
+
+
+def test_validate_command_reports_conflicting_flags() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="tar",
+            value_flags=("-f",),
+            conflicting_flag_pairs=(("-c", "-x"),),
+        )
+    )
+
+    result = validate_command("tar -cxf archive.tar ./dir", scenario)
+
+    assert not result.valid
+    assert result.issues[0].kind == IssueKind.CONFLICTING_FLAGS

@@ -32,6 +32,7 @@ _ISSUE_TITLES = {
     IssueKind.MISSING_SUBCOMMAND: "пропущена подкоманда",
     IssueKind.MISSING_FLAG: "пропущен обязательный флаг",
     IssueKind.FORBIDDEN_FLAG: "использован запрещенный флаг",
+    IssueKind.CONFLICTING_FLAGS: "конфликтующие флаги",
     IssueKind.MISSING_ARGUMENT: "пропущен обязательный аргумент",
     IssueKind.ARGUMENT_ORDER: "неверный порядок аргументов",
     IssueKind.EXTRA_ARGUMENT: "лишний аргумент",

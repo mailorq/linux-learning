@@ -13,6 +13,7 @@ class IssueKind(StrEnum):
     MISSING_SUBCOMMAND = "missing_subcommand"
     MISSING_FLAG = "missing_flag"
     FORBIDDEN_FLAG = "forbidden_flag"
+    CONFLICTING_FLAGS = "conflicting_flags"
     MISSING_ARGUMENT = "missing_argument"
     ARGUMENT_ORDER = "argument_order"
     EXTRA_ARGUMENT = "extra_argument"
@@ -110,6 +111,17 @@ def _validate_segment(
                 index,
             )
         )
+    for first, second in rule.conflicting_flag_pairs:
+        canonical_first = _canonical_flag(first, rule)
+        canonical_second = _canonical_flag(second, rule)
+        if canonical_first in flags and canonical_second in flags:
+            issues.append(
+                ValidationIssue(
+                    IssueKind.CONFLICTING_FLAGS,
+                    f"несовместимые флаги указаны вместе: {canonical_first} и {canonical_second}",
+                    index,
+                )
+            )
 
     expected_arguments = (*rule.required_subcommands, *rule.required_arguments)
     remaining = list(segment.positionals)

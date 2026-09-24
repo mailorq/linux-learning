@@ -39,3 +39,14 @@ def test_build_feedback_classifies_wrong_argument_order() -> None:
     assert feedback.details == (
         "позиционные аргументы указаны не в требуемом порядке: 640 /etc/app.conf",
     )
+
+
+def test_build_feedback_classifies_conflicting_flags() -> None:
+    scenario = load_scenario(Path("scenarios/tar_archive_web_root.yaml"))
+    result = validate_command("tar -czxf /var/backups/site.tar.gz /var/www/html", scenario)
+
+    feedback = build_feedback(result, scenario)
+
+    assert feedback.kind is FeedbackKind.ERROR
+    assert feedback.title == "конфликтующие флаги"
+    assert feedback.details == ("несовместимые флаги указаны вместе: -c и -x",)

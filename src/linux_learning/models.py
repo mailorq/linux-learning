@@ -48,6 +48,7 @@ class CommandRule(BaseModel):
     required_subcommands: tuple[str, ...] = ()
     required_flags: tuple[str, ...] = ()
     forbidden_flags: tuple[str, ...] = ()
+    conflicting_flag_pairs: tuple[tuple[str, str], ...] = ()
     value_flags: tuple[str, ...] = ()
     required_arguments: tuple[str, ...] = ()
     required_redirections: tuple[RedirectionRule, ...] = ()
@@ -97,6 +98,19 @@ class CommandRule(BaseModel):
         cleaned = {key.strip(): description.strip() for key, description in value.items()}
         if any(not key or not description for key, description in cleaned.items()):
             raise ValueError("описания флагов не могут быть пустыми")
+        return cleaned
+
+    @field_validator("conflicting_flag_pairs")
+    @classmethod
+    def validate_conflicting_flag_pairs(
+        cls,
+        value: tuple[tuple[str, str], ...],
+    ) -> tuple[tuple[str, str], ...]:
+        cleaned = tuple((first.strip(), second.strip()) for first, second in value)
+        if any(not first or not second or first == second for first, second in cleaned):
+            raise ValueError("пара конфликтующих флагов должна содержать два разных флага")
+        if len({frozenset(pair) for pair in cleaned}) != len(cleaned):
+            raise ValueError("пары конфликтующих флагов не должны повторяться")
         return cleaned
 
     @model_validator(mode="after")
