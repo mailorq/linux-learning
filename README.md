@@ -41,6 +41,14 @@ python -m pip install -e ".[dev]"
 linux-learning
 ```
 
+Можно выбрать уровень или тему:
+
+```text
+linux-learning --level beginner
+linux-learning --topic packages
+linux-learning --level beginner --topic packages
+```
+
 ## Генерация черновиков сценариев
 
 Генератор читает локальные markdown-страницы tldr для Linux. Сеть ему не нужна. Черновики создаются отдельно от каталога `scenarios` и не используются тренажером до редакторской проверки.

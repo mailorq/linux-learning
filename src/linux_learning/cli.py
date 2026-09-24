@@ -13,7 +13,7 @@ from rich.table import Table
 
 from linux_learning.errors import ScenarioError
 from linux_learning.feedback import FeedbackKind, build_feedback
-from linux_learning.models import Scenario
+from linux_learning.models import Scenario, ScenarioLevel
 from linux_learning.progress import ProgressStore, ProgressStoreError, ProgressSummary
 from linux_learning.scenario_loader import load_scenarios
 from linux_learning.validator import validate_command
@@ -33,6 +33,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="linux-learning")
     parser.add_argument("--scenario-dir", type=Path, default=Path("scenarios"))
     parser.add_argument(
+        "--level",
+        choices=[level.value for level in ScenarioLevel],
+        help="показывать сценарии выбранного уровня",
+    )
+    parser.add_argument("--topic", help="показывать сценарии выбранной темы")
+    parser.add_argument(
         "--history-file",
         type=Path,
         default=Path.home() / ".linux-learning" / "history",
@@ -45,18 +51,55 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        scenarios = load_scenarios(args.scenario_dir)
+        all_scenarios = load_scenarios(args.scenario_dir)
     except ScenarioError as exc:
         Console().print(f"[red]{exc}[/red]")
         return 2
 
     console = Console()
+    if args.topic is not None and not args.topic.strip():
+        console.print("[red]тема не может быть пустой[/red]")
+        return 2
+
+    level = ScenarioLevel(args.level) if args.level is not None else None
+    scenarios = select_scenarios(all_scenarios, level=level, topic=args.topic)
+    if not scenarios:
+        filters = []
+        if level is not None:
+            filters.append(f"уровень {level.value}")
+        if args.topic is not None:
+            filters.append(f"тема {args.topic.strip()}")
+        console.print(f"[red]не найдены сценарии: {', '.join(filters)}[/red]")
+        console.print(
+            "доступные темы: " + ", ".join(sorted({scenario.topic for scenario in all_scenarios}))
+        )
+        console.print(
+            "доступные уровни: "
+            + ", ".join(sorted({scenario.level.value for scenario in all_scenarios}))
+        )
+        return 2
+
     try:
         progress_store = ProgressStore(args.progress_file)
     except ProgressStoreError as exc:
         console.print(f"[yellow]{exc}; прогресс не будет сохранен[/yellow]")
         progress_store = None
     return run_session(scenarios, args.history_file, progress_store)
+
+
+def select_scenarios(
+    scenarios: Sequence[Scenario],
+    *,
+    level: ScenarioLevel | None = None,
+    topic: str | None = None,
+) -> tuple[Scenario, ...]:
+    normalized_topic = topic.strip().casefold() if topic is not None else None
+    return tuple(
+        scenario
+        for scenario in scenarios
+        if (level is None or scenario.level is level)
+        and (normalized_topic is None or scenario.topic.casefold() == normalized_topic)
+    )
 
 
 def run_session(
@@ -74,7 +117,7 @@ def run_session(
         while True:
             try:
                 value = session.prompt(f"{scenario.role} ")
-            except (EOFError, KeyboardInterrupt):
+            except EOFError, KeyboardInterrupt:
                 console.print("сессия завершена")
                 _finish_session(console, stats, progress_store)
                 return 0
@@ -207,7 +250,5 @@ def _show_stats(
         summary.topic_errors if summary is not None else tuple(stats.topic_errors.items())
     )
     if topic_errors:
-        weak_topics = ", ".join(
-            f"{topic}: {count}" for topic, count in topic_errors
-        )
+        weak_topics = ", ".join(f"{topic}: {count}" for topic, count in topic_errors)
         console.print(f"слабые темы: {weak_topics}")
