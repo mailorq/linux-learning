@@ -78,9 +78,7 @@ def parse_command(
             target, index = _take_target(tokens, index)
             if not target.isdigit():
                 raise CommandParseError("дублирование потока требует номер файлового дескриптора")
-            redirections.append(
-                Redirection(source_fd, RedirectionOperator.DUPLICATE, target)
-            )
+            redirections.append(Redirection(source_fd, RedirectionOperator.DUPLICATE, target))
             continue
 
         if token.operator:
@@ -149,7 +147,7 @@ def _tokenize(text: str) -> tuple[_Token, ...]:
             continue
 
         word.append(char)
-        if quote == "\"" and char == "\\":
+        if quote == '"' and char == "\\":
             if index + 1 == len(text):
                 raise CommandParseError("экранирование не завершено")
             word.append(text[index + 1])

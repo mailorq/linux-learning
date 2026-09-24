@@ -54,7 +54,7 @@ def test_parse_command_keeps_quoted_operators_as_arguments() -> None:
 @pytest.mark.parametrize(
     "text, message",
     [
-        ("grep \"error", "кавычка не закрыта"),
+        ('grep "error', "кавычка не закрыта"),
         ("journalctl |", "команда отсутствует после пайпа"),
         ("cat >", "для перенаправления не указан поток или файл"),
         ("echo one && echo two", "оператор не поддерживается: &&"),
