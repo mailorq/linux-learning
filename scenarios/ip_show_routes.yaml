@@ -1,0 +1,22 @@
+id: network.show_routes
+title: посмотреть таблицу маршрутизации
+level: intermediate
+topic: network
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести таблицу маршрутов ядра для проверки сетевого пути
+command_rules:
+  - executable: ip
+    required_subcommands: [route]
+    required_arguments: [show]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: таблица маршрутизации определяет, через какой интерфейс и шлюз отправлять трафик
+    progress_penalty: 0
+  - level: tools
+    text: в ip выбери раздел route и действие show
+    progress_penalty: 5
+  - level: solution
+    text: используй команду ip route show
+    progress_penalty: 15
+success_explanation: ip вывел маршруты ядра, включая маршрут по умолчанию и доступные сети

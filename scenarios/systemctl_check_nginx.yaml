@@ -1,0 +1,22 @@
+id: services.check_nginx
+title: проверить состояние nginx
+level: beginner
+topic: services
+role: root@ubuntu-srv-01:~#
+objective: нужно проверить, активен ли сервис nginx
+command_rules:
+  - executable: systemctl
+    required_subcommands: [is-active]
+    required_arguments: [nginx]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: systemctl может проверить состояние юнита и вернуть краткий ответ для скрипта или оператора
+    progress_penalty: 0
+  - level: tools
+    text: укажи действие is-active и имя юнита nginx
+    progress_penalty: 5
+  - level: solution
+    text: используй команду systemctl is-active nginx
+    progress_penalty: 15
+success_explanation: systemctl проверил активное состояние юнита nginx и вывел краткий статус

@@ -5,15 +5,20 @@ from linux_learning.validator import validate_command
 
 _REFERENCE_SOLUTIONS = {
     "packages.install_nginx": "apt install nginx",
+    "packages.update_index": "apt update",
     "services.restart_nginx": "systemctl restart nginx",
+    "services.check_nginx": "systemctl is-active nginx",
     "logging.filter_nginx_errors": (
         "journalctl -u nginx | grep -i error > /var/log/nginx-errors.log 2>&1"
     ),
     "network.listening_tcp": "ss -ltnp",
     "network.allow_https": "ufw allow 443/tcp",
+    "network.show_routes": "ip route show",
     "permissions.secure_config": "chmod 640 /etc/app.conf",
+    "permissions.change_web_owner": "chown www-data:www-data /var/www/html",
     "files.archive_web_root": "tar -czf /var/backups/site.tar.gz /var/www/html",
     "diagnostics.root_usage": "df --human-readable /",
+    "containers.list_all": "docker ps --all",
 }
 
 

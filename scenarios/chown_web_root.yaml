@@ -1,0 +1,21 @@
+id: permissions.change_web_owner
+title: назначить владельца каталогу сайта
+level: intermediate
+topic: permissions
+role: root@ubuntu-srv-01:~#
+objective: нужно назначить пользователя и группу www-data владельцами каталога /var/www/html
+command_rules:
+  - executable: chown
+    required_arguments: ["www-data:www-data", /var/www/html]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: chown меняет владельца файла, а запись user:group задает пользователя и группу вместе
+    progress_penalty: 0
+  - level: tools
+    text: передай chown имя пользователя и группы через двоеточие, затем путь каталога
+    progress_penalty: 5
+  - level: solution
+    text: используй команду chown www-data:www-data /var/www/html
+    progress_penalty: 15
+success_explanation: chown назначил пользователя www-data владельцем каталога и группу www-data его основной группой

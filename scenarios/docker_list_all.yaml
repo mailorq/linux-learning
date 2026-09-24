@@ -1,0 +1,26 @@
+id: containers.list_all
+title: показать все контейнеры
+level: intermediate
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести список всех контейнеров, включая остановленные
+command_rules:
+  - executable: docker
+    required_subcommands: [ps]
+    required_flags: [-a]
+    flag_aliases:
+      --all: -a
+    flag_descriptions:
+      "-a": включает остановленные контейнеры
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: docker ps обычно показывает только работающие контейнеры, а дополнительный флаг расширяет список
+    progress_penalty: 0
+  - level: tools
+    text: используй подкоманду ps и флаг --all или его короткую форму -a
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker ps --all
+    progress_penalty: 15
+success_explanation: docker ps вывел контейнеры независимо от того, работают они сейчас или остановлены

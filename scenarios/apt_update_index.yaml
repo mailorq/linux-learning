@@ -1,0 +1,22 @@
+id: packages.update_index
+title: обновить индекс пакетов
+level: beginner
+topic: packages
+role: root@ubuntu-srv-01:~#
+objective: нужно обновить локальный индекс пакетов без установки обновлений
+command_rules:
+  - executable: apt
+    aliases: [apt-get]
+    required_subcommands: [update]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: apt update синхронизирует сведения о версиях пакетов, но не меняет установленные пакеты
+    progress_penalty: 0
+  - level: tools
+    text: используй менеджер apt и подкоманду update без имени пакета
+    progress_penalty: 5
+  - level: solution
+    text: используй команду apt update
+    progress_penalty: 15
+success_explanation: apt обновил локальный индекс доступных пакетов, не устанавливая их и не обновляя систему
