@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from difflib import get_close_matches
 from enum import StrEnum
 
 from linux_learning.command_parser import CommandSegment, ParsedCommandLine, parse_command
@@ -131,10 +132,14 @@ def _validate_segment(
             remaining.remove(argument)
         else:
             missing_arguments = True
+            message = f"отсутствует обязательный аргумент {argument}"
+            suggestions = get_close_matches(argument, remaining, n=1, cutoff=0.75)
+            if suggestions:
+                message += f"; возможно, вместо него указан {suggestions[0]}"
             issues.append(
                 ValidationIssue(
                     IssueKind.MISSING_ARGUMENT,
-                    f"отсутствует обязательный аргумент {argument}",
+                    message,
                     index,
                 )
             )

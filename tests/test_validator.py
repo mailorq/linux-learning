@@ -170,3 +170,22 @@ def test_validate_command_reports_conflicting_flags() -> None:
 
     assert not result.valid
     assert result.issues[0].kind == IssueKind.CONFLICTING_FLAGS
+
+
+def test_validate_command_suggests_close_required_argument() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="systemctl",
+            required_subcommands=("restart",),
+            required_arguments=("nginx",),
+            allow_extra_arguments=False,
+        )
+    )
+
+    result = validate_command("systemctl restart ngixn", scenario)
+    missing_argument = next(
+        issue for issue in result.issues if issue.kind == IssueKind.MISSING_ARGUMENT
+    )
+
+    assert not result.valid
+    assert "возможно, вместо него указан ngixn" in missing_argument.message
