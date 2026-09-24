@@ -1,0 +1,21 @@
+id: users.show_identity
+title: проверить uid и группы системного пользователя
+level: beginner
+topic: users
+role: root@ubuntu-srv-01:~#
+objective: нужно узнать uid, основную группу и дополнительные группы пользователя www-data
+command_rules:
+  - executable: id
+    required_arguments: [www-data]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: id показывает идентификаторы пользователя и группы, а также членство в группах
+    progress_penalty: 0
+  - level: tools
+    text: передай id имя пользователя www-data
+    progress_penalty: 5
+  - level: solution
+    text: используй команду id www-data
+    progress_penalty: 15
+success_explanation: id вывел uid пользователя www-data, его основную группу и дополнительные группы

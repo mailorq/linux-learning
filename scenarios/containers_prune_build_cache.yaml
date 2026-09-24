@@ -1,0 +1,25 @@
+id: containers.prune_build_cache
+title: очистить давно неиспользуемый build cache
+level: intermediate
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно удалить записи кэша выбранного builder, которые не использовались последние 24 часа
+command_rules:
+  - executable: docker
+    required_subcommands: [buildx, prune]
+    required_flags: [--filter]
+    flag_descriptions:
+      --filter: сохраняет записи, использовавшиеся в течение указанного срока
+    required_arguments: [until=24h]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: buildx хранит кэш сборок отдельно от контейнеров и томов, фильтр until учитывает недавнее использование записей
+    progress_penalty: 0
+  - level: tools
+    text: используй buildx prune с фильтром until=24h, он сохраняет записи, использовавшиеся в этот период
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker buildx prune --filter until=24h
+    progress_penalty: 15
+success_explanation: при исполнении buildx запросит подтверждение и удалит записи кэша выбранного builder, которые не использовались последние 24 часа

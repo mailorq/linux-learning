@@ -2,6 +2,7 @@ import argparse
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from importlib.resources import files
 from pathlib import Path
 
 from prompt_toolkit import PromptSession
@@ -31,7 +32,7 @@ class SessionStats:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="linux-learning")
-    parser.add_argument("--scenario-dir", type=Path, default=Path("scenarios"))
+    parser.add_argument("--scenario-dir", type=Path, default=_default_scenario_dir())
     parser.add_argument(
         "--level",
         choices=[level.value for level in ScenarioLevel],
@@ -100,6 +101,13 @@ def select_scenarios(
         if (level is None or scenario.level is level)
         and (normalized_topic is None or scenario.topic.casefold() == normalized_topic)
     )
+
+
+def _default_scenario_dir() -> Path:
+    local_directory = Path("scenarios")
+    if local_directory.is_dir():
+        return local_directory
+    return Path(str(files("linux_learning.scenarios")))
 
 
 def run_session(

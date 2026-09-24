@@ -47,6 +47,7 @@ class CommandRule(BaseModel):
     flag_descriptions: dict[str, str] = Field(default_factory=dict)
     required_subcommands: tuple[str, ...] = ()
     required_flags: tuple[str, ...] = ()
+    allowed_flags: tuple[str, ...] = ()
     forbidden_flags: tuple[str, ...] = ()
     conflicting_flag_pairs: tuple[tuple[str, str], ...] = ()
     value_flags: tuple[str, ...] = ()
@@ -59,6 +60,7 @@ class CommandRule(BaseModel):
         "aliases",
         "required_subcommands",
         "required_flags",
+        "allowed_flags",
         "forbidden_flags",
         "value_flags",
         "required_arguments",
@@ -115,10 +117,14 @@ class CommandRule(BaseModel):
 
     @model_validator(mode="after")
     def validate_flags(self) -> Self:
-        conflicts = set(self.required_flags) & set(self.forbidden_flags)
+        aliases = self.flag_aliases
+        required = {aliases.get(flag, flag) for flag in self.required_flags}
+        allowed = {aliases.get(flag, flag) for flag in self.allowed_flags}
+        forbidden = {aliases.get(flag, flag) for flag in self.forbidden_flags}
+        conflicts = (required | allowed) & forbidden
         if conflicts:
             names = ", ".join(sorted(conflicts))
-            raise ValueError(f"флаг одновременно обязателен и запрещен: {names}")
+            raise ValueError(f"флаг одновременно разрешен и запрещен: {names}")
         return self
 
 

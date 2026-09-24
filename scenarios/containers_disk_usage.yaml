@@ -1,0 +1,21 @@
+id: containers.disk_usage
+title: посмотреть расход диска Docker
+level: intermediate
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно посмотреть занятое и потенциально освобождаемое место образами, контейнерами, томами и build cache
+command_rules:
+  - executable: docker
+    required_subcommands: [system, df]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: перед очисткой ресурсов Docker сначала оценивают, какие категории занимают место
+    progress_penalty: 0
+  - level: tools
+    text: используй подкоманду system и действие df
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker system df
+    progress_penalty: 15
+success_explanation: docker system df показал использование диска образами, контейнерами, локальными томами и build cache без удаления данных

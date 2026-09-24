@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from linux_learning.scenario_loader import load_scenarios
-from linux_learning.validator import validate_command
+from linux_learning.validator import IssueKind, validate_command
 
 _REFERENCE_SOLUTIONS = {
     "packages.install_nginx": "apt install nginx",
@@ -25,6 +25,16 @@ _REFERENCE_SOLUTIONS = {
     "containers.list_all": "docker ps --all",
     "containers.inspect_web": "docker inspect web",
     "packages.simulate_upgrade": "apt-get -s upgrade",
+    "diagnostics.directory_usage": "du -sh /var/log",
+    "diagnostics.memory_summary": "free -h",
+    "processes.list_all": "ps -ef",
+    "storage.list_filesystems": "lsblk -f",
+    "users.show_identity": "id www-data",
+    "containers.disk_usage": "docker system df",
+    "containers.list_dangling_volumes": "docker volume ls --filter dangling=true",
+    "containers.prune_lab_volumes": ("docker volume prune --all --filter label=project=lab"),
+    "containers.prune_stopped": "docker container prune --filter until=24h",
+    "containers.prune_build_cache": "docker buildx prune --filter until=24h",
 }
 
 
@@ -37,3 +47,42 @@ def test_reference_solutions_match_all_scenarios() -> None:
         result = validate_command(command, by_id[scenario_id])
 
         assert result.valid, f"{scenario_id}: {result.issues}"
+
+
+def test_scenarios_reject_flags_that_change_the_requested_action() -> None:
+    scenarios = {scenario.id: scenario for scenario in load_scenarios(Path("scenarios"))}
+    commands = {
+        "packages.install_nginx": "apt install nginx -s",
+        "diagnostics.root_usage": "df -ih /",
+        "services.failed_units": "systemctl --failed --no-pager --user",
+        "network.show_routes": "ip -6 route show",
+        "network.listening_tcp": "ss -ltnp -K",
+        "logging.search_error_patterns": "grep -Einv 'error|failed' /var/log/syslog",
+        "containers.prune_lab_volumes": (
+            "docker volume prune --all --filter label=project=lab --force"
+        ),
+        "containers.prune_stopped": "docker container prune --filter until=24h --force",
+        "containers.prune_build_cache": "docker buildx prune --filter until=24h --force",
+    }
+
+    for scenario_id, command in commands.items():
+        result = validate_command(command, scenarios[scenario_id])
+
+        assert not result.valid, f"{scenario_id} accepted {command}"
+        assert any(issue.kind is IssueKind.EXTRA_FLAG for issue in result.issues)
+
+
+def test_volume_filter_alias_is_allowed_but_force_is_not() -> None:
+    scenarios = {scenario.id: scenario for scenario in load_scenarios(Path("scenarios"))}
+    list_result = validate_command(
+        "docker volume ls -f dangling=true",
+        scenarios["containers.list_dangling_volumes"],
+    )
+    prune_result = validate_command(
+        "docker volume prune --all --filter label=project=lab -f",
+        scenarios["containers.prune_lab_volumes"],
+    )
+
+    assert list_result.valid
+    assert not prune_result.valid
+    assert any(issue.kind is IssueKind.EXTRA_FLAG for issue in prune_result.issues)

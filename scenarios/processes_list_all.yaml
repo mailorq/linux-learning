@@ -1,0 +1,24 @@
+id: processes.list_all
+title: получить снимок всех процессов
+level: beginner
+topic: processes
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести снимок всех процессов системы в полном формате ps
+command_rules:
+  - executable: ps
+    required_flags: [-e, -f]
+    flag_descriptions:
+      "-e": выбирает все процессы
+      "-f": включает полный формат вывода
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: ps выводит текущий снимок процессов, а не обновляемую таблицу
+    progress_penalty: 0
+  - level: tools
+    text: выбери все процессы и полный формат вывода
+    progress_penalty: 5
+  - level: solution
+    text: используй команду ps -ef
+    progress_penalty: 15
+success_explanation: ps вывел текущий список процессов в полном формате, включая владельца, pid, ppid и команду

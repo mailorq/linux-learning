@@ -18,6 +18,7 @@ class IssueKind(StrEnum):
     MISSING_ARGUMENT = "missing_argument"
     ARGUMENT_ORDER = "argument_order"
     EXTRA_ARGUMENT = "extra_argument"
+    EXTRA_FLAG = "extra_flag"
     MISSING_REDIRECTION = "missing_redirection"
     EXTRA_REDIRECTION = "extra_redirection"
 
@@ -39,10 +40,25 @@ class ValidationResult:
 def validate_command(text: str, scenario: Scenario) -> ValidationResult:
     try:
         value_flags_by_executable: dict[str, set[str]] = {}
+        known_flags_by_executable: dict[str, set[str]] = {}
         for rule in scenario.command_rules:
             for executable in (rule.executable, *rule.aliases):
                 value_flags_by_executable.setdefault(executable, set()).update(rule.value_flags)
-        parsed = parse_command(text, value_flags_by_executable=value_flags_by_executable)
+                known_flags_by_executable.setdefault(executable, set()).update(
+                    (
+                        *rule.required_flags,
+                        *rule.allowed_flags,
+                        *rule.forbidden_flags,
+                        *(flag for pair in rule.conflicting_flag_pairs for flag in pair),
+                        *rule.flag_aliases.keys(),
+                        *rule.flag_aliases.values(),
+                    )
+                )
+        parsed = parse_command(
+            text,
+            value_flags_by_executable=value_flags_by_executable,
+            known_flags_by_executable=known_flags_by_executable,
+        )
     except CommandParseError as exc:
         issue = ValidationIssue(IssueKind.SYNTAX, str(exc))
         return ValidationResult(False, (issue,))
@@ -109,6 +125,22 @@ def _validate_segment(
             ValidationIssue(
                 IssueKind.FORBIDDEN_FLAG,
                 f"использован запрещенный флаг {flag}",
+                index,
+            )
+        )
+    known_flags = (
+        required_flags
+        | forbidden_flags
+        | {_canonical_flag(flag, rule) for flag in rule.allowed_flags}
+    )
+    known_flags.update(
+        _canonical_flag(flag, rule) for pair in rule.conflicting_flag_pairs for flag in pair
+    )
+    for flag in sorted(flags - known_flags):
+        issues.append(
+            ValidationIssue(
+                IssueKind.EXTRA_FLAG,
+                f"неожиданный флаг {flag}",
                 index,
             )
         )

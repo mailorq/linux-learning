@@ -84,7 +84,7 @@ def test_validate_command_reports_missing_and_forbidden_flags() -> None:
 
 def test_validate_command_checks_pipeline_shape() -> None:
     scenario = make_scenario(
-        CommandRule(executable="journalctl"),
+        CommandRule(executable="journalctl", allowed_flags=("-u",)),
         CommandRule(executable="grep", required_flags=("-i",)),
     )
 
@@ -95,7 +95,7 @@ def test_validate_command_checks_pipeline_shape() -> None:
 
 def test_validate_command_checks_redirections_for_each_pipeline_segment() -> None:
     scenario = make_scenario(
-        CommandRule(executable="journalctl"),
+        CommandRule(executable="journalctl", allowed_flags=("-u",)),
         CommandRule(
             executable="grep",
             required_flags=("-i",),
@@ -162,6 +162,7 @@ def test_validate_command_reports_conflicting_flags() -> None:
         CommandRule(
             executable="tar",
             value_flags=("-f",),
+            allowed_flags=("-f",),
             conflicting_flag_pairs=(("-c", "-x"),),
         )
     )
@@ -189,3 +190,19 @@ def test_validate_command_suggests_close_required_argument() -> None:
 
     assert not result.valid
     assert "возможно, вместо него указан ngixn" in missing_argument.message
+
+
+def test_validate_command_rejects_unlisted_flags() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="grep",
+            required_flags=("-i",),
+            required_arguments=("error",),
+            allow_extra_arguments=False,
+        )
+    )
+
+    result = validate_command("grep -iv error", scenario)
+
+    assert not result.valid
+    assert [issue.kind for issue in result.issues] == [IssueKind.EXTRA_FLAG]

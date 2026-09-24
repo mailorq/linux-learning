@@ -1,0 +1,28 @@
+id: diagnostics.directory_usage
+title: оценить размер каталога журналов
+level: beginner
+topic: diagnostics
+role: root@ubuntu-srv-01:~#
+objective: нужно узнать общий размер каталога /var/log в читаемых единицах
+command_rules:
+  - executable: du
+    required_flags: [-s, -h]
+    flag_aliases:
+      --summarize: -s
+      --human-readable: -h
+    flag_descriptions:
+      "-s": выводит только общий итог для указанного пути
+      "-h": показывает размер в читаемых единицах
+    required_arguments: [/var/log]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: du считает место, занимаемое файлами и каталогами внутри указанного пути
+    progress_penalty: 0
+  - level: tools
+    text: попроси du вывести только итог для /var/log и включить читаемые единицы
+    progress_penalty: 5
+  - level: solution
+    text: используй команду du -sh /var/log
+    progress_penalty: 15
+success_explanation: флаг -s оставил общий итог каталога, а -h показал его в читаемых единицах

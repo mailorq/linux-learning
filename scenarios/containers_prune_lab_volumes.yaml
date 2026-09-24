@@ -1,0 +1,28 @@
+id: containers.prune_lab_volumes
+title: удалить неиспользуемые тома учебного проекта
+level: advanced
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: для Docker API 1.42 или новее нужно удалить неиспользуемые локальные тома с меткой project=lab, включая именованные тома
+command_rules:
+  - executable: docker
+    required_subcommands: [volume, prune]
+    required_flags: [--all, --filter]
+    flag_aliases:
+      -a: --all
+    flag_descriptions:
+      --all: включает в очистку именованные тома
+      --filter: ограничивает удаление томами с заданной меткой
+    required_arguments: [label=project=lab]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: prune удаляет только неиспользуемые тома, а метка сужает выбор до ресурсов учебного проекта
+    progress_penalty: 0
+  - level: tools
+    text: укажи volume prune, флаги --all и --filter с меткой project=lab
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker volume prune --all --filter label=project=lab
+    progress_penalty: 15
+success_explanation: при исполнении docker запросит подтверждение и удалит только неиспользуемые локальные тома с меткой project=lab; --all включает именованные тома

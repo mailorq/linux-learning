@@ -1,0 +1,25 @@
+id: containers.prune_stopped
+title: удалить остановленные контейнеры старше суток
+level: advanced
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно удалить только остановленные контейнеры, созданные более 24 часов назад
+command_rules:
+  - executable: docker
+    required_subcommands: [container, prune]
+    required_flags: [--filter]
+    flag_descriptions:
+      --filter: ограничивает выборку контейнерами старше указанного срока
+    required_arguments: [until=24h]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: container prune удаляет остановленные контейнеры, а until ограничивает их возраст
+    progress_penalty: 0
+  - level: tools
+    text: выбери container prune и фильтр until=24h, не отключая запрос подтверждения
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker container prune --filter until=24h
+    progress_penalty: 15
+success_explanation: при исполнении docker запросит подтверждение и удалит только остановленные контейнеры старше 24 часов

@@ -44,6 +44,7 @@ def parse_command(
     text: str,
     flag_aliases: Mapping[str, str] | None = None,
     value_flags_by_executable: Mapping[str, Collection[str]] | None = None,
+    known_flags_by_executable: Mapping[str, Collection[str]] | None = None,
 ) -> ParsedCommandLine:
     tokens = _tokenize(text)
     segments: list[CommandSegment] = []
@@ -57,7 +58,13 @@ def parse_command(
             if not words:
                 raise CommandParseError("пайп не может начинаться или повторяться")
             segments.append(
-                _build_segment(words, redirections, flag_aliases, value_flags_by_executable)
+                _build_segment(
+                    words,
+                    redirections,
+                    flag_aliases,
+                    value_flags_by_executable,
+                    known_flags_by_executable,
+                )
             )
             words = []
             redirections = []
@@ -89,7 +96,15 @@ def parse_command(
 
     if not words:
         raise CommandParseError("команда отсутствует после пайпа")
-    segments.append(_build_segment(words, redirections, flag_aliases, value_flags_by_executable))
+    segments.append(
+        _build_segment(
+            words,
+            redirections,
+            flag_aliases,
+            value_flags_by_executable,
+            known_flags_by_executable,
+        )
+    )
     return ParsedCommandLine(tuple(segments))
 
 
@@ -181,6 +196,7 @@ def _build_segment(
     redirections: list[Redirection],
     flag_aliases: Mapping[str, str] | None,
     value_flags_by_executable: Mapping[str, Collection[str]] | None,
+    known_flags_by_executable: Mapping[str, Collection[str]] | None,
 ) -> CommandSegment:
     executable = words[0].value
     if not executable:
@@ -190,8 +206,13 @@ def _build_segment(
         if value_flags_by_executable is not None
         else ()
     )
+    known_flags = (
+        known_flags_by_executable.get(executable, ())
+        if known_flags_by_executable is not None
+        else None
+    )
     arguments = _normalize_arguments(
-        tuple(word.value for word in words[1:]), flag_aliases, value_flags
+        tuple(word.value for word in words[1:]), flag_aliases, value_flags, known_flags
     )
     flags: list[str] = []
     positionals: list[str] = []
@@ -217,6 +238,7 @@ def _normalize_arguments(
     arguments: tuple[str, ...],
     flag_aliases: Mapping[str, str] | None,
     value_flags: Collection[str] = (),
+    known_flags: Collection[str] | None = None,
 ) -> tuple[str, ...]:
     aliases = flag_aliases or {}
     value_options = {aliases.get(flag, flag) for flag in value_flags}
@@ -236,6 +258,9 @@ def _normalize_arguments(
             continue
 
         argument = aliases.get(argument, argument)
+        if known_flags is not None and argument in known_flags:
+            normalized.append(argument)
+            continue
         if len(argument) > 2 and argument.startswith("-") and not argument.startswith("--"):
             tail = argument[1:]
             expanded: list[str] = []

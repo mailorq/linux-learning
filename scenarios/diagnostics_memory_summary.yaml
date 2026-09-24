@@ -1,0 +1,25 @@
+id: diagnostics.memory_summary
+title: посмотреть сводку оперативной памяти
+level: beginner
+topic: diagnostics
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести сводку оперативной памяти, включая доступный объем, в читаемых единицах
+command_rules:
+  - executable: free
+    required_flags: [-h]
+    flag_aliases:
+      --human: -h
+    flag_descriptions:
+      "-h": показывает размеры в читаемых единицах
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: free показывает объем памяти, который используется и остается доступным системе
+    progress_penalty: 0
+  - level: tools
+    text: используй free с флагом читаемого формата
+    progress_penalty: 5
+  - level: solution
+    text: используй команду free -h
+    progress_penalty: 15
+success_explanation: free вывел сводку оперативной памяти в читаемых единицах, включая поле available

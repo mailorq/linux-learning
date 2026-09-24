@@ -55,6 +55,21 @@ def test_select_scenarios_returns_empty_for_unknown_topic(
     assert cli.select_scenarios(scenarios, topic="unknown") == ()
 
 
+def test_default_scenario_directory_uses_packaged_data(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_is_dir = Path.is_dir
+
+    def is_dir(path: Path) -> bool:
+        return False if path == Path("scenarios") else original_is_dir(path)
+
+    monkeypatch.setattr(Path, "is_dir", is_dir)
+    scenario_directory = cli._default_scenario_dir()
+
+    assert scenario_directory.is_dir()
+    assert tuple(scenario_directory.glob("*.yaml"))
+
+
 def test_main_does_not_open_progress_store_when_no_scenarios_match(
     monkeypatch: pytest.MonkeyPatch,
     scenarios: tuple[Scenario, ...],

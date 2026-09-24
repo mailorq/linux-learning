@@ -3,7 +3,7 @@ title: установить nginx
 level: beginner
 topic: packages
 role: root@ubuntu-srv-01:~#
-objective: нужно установить nginx через apt и проверить, что пакет добавлен
+objective: нужно установить пакет nginx через apt
 command_rules:
   - executable: apt
     aliases: [apt-get]
@@ -20,4 +20,4 @@ hints:
   - level: solution
     text: используй команду apt install nginx
     progress_penalty: 15
-success_explanation: apt передал менеджеру пакетов запрос на установку nginx и проверил зависимости
+success_explanation: apt передал менеджеру пакетов запрос на установку nginx и разрешение его зависимостей

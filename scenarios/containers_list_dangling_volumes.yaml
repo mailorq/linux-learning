@@ -1,0 +1,27 @@
+id: containers.list_dangling_volumes
+title: найти тома без подключенных контейнеров
+level: intermediate
+topic: containers
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести локальные тома, на которые не ссылается ни один контейнер, ничего не удаляя
+command_rules:
+  - executable: docker
+    required_subcommands: [volume, ls]
+    required_flags: [--filter]
+    flag_aliases:
+      -f: --filter
+    flag_descriptions:
+      --filter: ограничивает список условием dangling=true
+    required_arguments: [dangling=true]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: dangling том не подключен ни к одному контейнеру, а volume ls только показывает список
+    progress_penalty: 0
+  - level: tools
+    text: используй docker volume ls с фильтром dangling=true
+    progress_penalty: 5
+  - level: solution
+    text: используй команду docker volume ls --filter dangling=true
+    progress_penalty: 15
+success_explanation: docker показал локальные тома, на которые не ссылается ни один контейнер, и не менял их состояние

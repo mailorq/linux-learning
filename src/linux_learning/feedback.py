@@ -36,6 +36,7 @@ _ISSUE_TITLES = {
     IssueKind.MISSING_ARGUMENT: "пропущен обязательный аргумент",
     IssueKind.ARGUMENT_ORDER: "неверный порядок аргументов",
     IssueKind.EXTRA_ARGUMENT: "лишний аргумент",
+    IssueKind.EXTRA_FLAG: "неожиданный флаг",
     IssueKind.MISSING_REDIRECTION: "пропущено перенаправление",
     IssueKind.EXTRA_REDIRECTION: "лишнее перенаправление",
 }

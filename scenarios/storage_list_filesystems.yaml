@@ -1,0 +1,25 @@
+id: storage.list_filesystems
+title: посмотреть файловые системы на блочных устройствах
+level: beginner
+topic: storage
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести блочные устройства вместе с типом, меткой, uuid и точкой монтирования файловой системы
+command_rules:
+  - executable: lsblk
+    required_flags: [-f]
+    flag_aliases:
+      --fs: -f
+    flag_descriptions:
+      "-f": добавляет сведения о файловых системах и точках монтирования
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: lsblk показывает блочные устройства, а режим файловых систем дополняет их метаданными
+    progress_penalty: 0
+  - level: tools
+    text: используй lsblk с флагом --fs или его короткой формой -f
+    progress_penalty: 5
+  - level: solution
+    text: используй команду lsblk -f
+    progress_penalty: 15
+success_explanation: lsblk вывел блочные устройства с типом файловой системы, меткой, uuid и точкой монтирования
