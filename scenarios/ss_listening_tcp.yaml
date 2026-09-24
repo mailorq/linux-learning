@@ -1,0 +1,26 @@
+id: network.listening_tcp
+title: проверить tcp порты в режиме ожидания
+level: beginner
+topic: network
+role: root@ubuntu-srv-01:~#
+objective: нужно вывести только слушающие tcp сокеты с числовыми адресами и именами процессов
+command_rules:
+  - executable: ss
+    required_flags: [-l, -t, -n, -p]
+    flag_descriptions:
+      "-l": показывает слушающие сокеты
+      "-t": ограничивает вывод tcp сокетами
+      "-n": оставляет адреса и порты в числовом виде
+      "-p": показывает связанные процессы
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: утилита ss показывает сокеты ядра без установки дополнительных пакетов
+    progress_penalty: 0
+  - level: tools
+    text: выбери режим слушающих tcp сокетов и включи числовые адреса вместе с процессами
+    progress_penalty: 5
+  - level: solution
+    text: используй команду ss -ltnp
+    progress_penalty: 15
+success_explanation: ss отобрала слушающие tcp сокеты, не преобразовывала адреса в имена и добавила сведения о процессах

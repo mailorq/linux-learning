@@ -26,3 +26,16 @@ def test_build_feedback_classifies_wrong_tool() -> None:
     assert feedback.kind is FeedbackKind.ERROR
     assert feedback.title == "неверная утилита"
     assert feedback.details == ("ожидалась утилита apt, получена service",)
+
+
+def test_build_feedback_classifies_wrong_argument_order() -> None:
+    scenario = load_scenario(Path("scenarios/chmod_secure_config.yaml"))
+    result = validate_command("chmod /etc/app.conf 640", scenario)
+
+    feedback = build_feedback(result, scenario)
+
+    assert feedback.kind is FeedbackKind.ERROR
+    assert feedback.title == "неверный порядок аргументов"
+    assert feedback.details == (
+        "позиционные аргументы указаны не в требуемом порядке: 640 /etc/app.conf",
+    )

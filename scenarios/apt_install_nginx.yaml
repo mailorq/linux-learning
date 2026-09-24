@@ -3,7 +3,7 @@ title: установить nginx
 level: beginner
 topic: packages
 role: root@ubuntu-srv-01:~#
-objective: установить nginx через apt и проверить, что пакет добавлен
+objective: нужно установить nginx через apt и проверить, что пакет добавлен
 command_rules:
   - executable: apt
     aliases: [apt-get]

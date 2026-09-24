@@ -1,0 +1,21 @@
+id: permissions.secure_config
+title: ограничить доступ к конфигурации
+level: beginner
+topic: permissions
+role: root@ubuntu-srv-01:~#
+objective: нужно установить для файла /etc/app.conf права 640, чтобы только владелец мог его изменять
+command_rules:
+  - executable: chmod
+    required_arguments: ["640", /etc/app.conf]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: chmod задает владельцу права чтения и записи, группе только чтение, остальным доступ не дает
+    progress_penalty: 0
+  - level: tools
+    text: укажи режим 640 перед путем к файлу
+    progress_penalty: 5
+  - level: solution
+    text: используй команду chmod 640 /etc/app.conf
+    progress_penalty: 15
+success_explanation: chmod установил владельцу чтение и запись, группе чтение, а для остальных пользователей снял все права

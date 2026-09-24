@@ -140,3 +140,18 @@ def test_validate_command_reports_syntax_error() -> None:
 
     assert not result.valid
     assert result.issues[0].kind == IssueKind.SYNTAX
+
+
+def test_validate_command_rejects_required_arguments_in_wrong_order() -> None:
+    scenario = make_scenario(
+        CommandRule(
+            executable="chmod",
+            required_arguments=("640", "/etc/app.conf"),
+            allow_extra_arguments=False,
+        )
+    )
+
+    result = validate_command("chmod /etc/app.conf 640", scenario)
+
+    assert not result.valid
+    assert result.issues[0].kind == IssueKind.ARGUMENT_ORDER

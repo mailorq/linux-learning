@@ -1,0 +1,27 @@
+id: files.archive_web_root
+title: создать сжатый архив сайта
+level: intermediate
+topic: files
+role: root@ubuntu-srv-01:~#
+objective: нужно создать gzip архив каталога /var/www/html по пути /var/backups/site.tar.gz
+command_rules:
+  - executable: tar
+    value_flags: [-f]
+    required_flags: [-c, -z, -f]
+    flag_descriptions:
+      "-c": создает новый архив
+      "-z": использует gzip сжатие
+      "-f": задает имя файла архива
+    required_arguments: [/var/backups/site.tar.gz, /var/www/html]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: tar собирает файлы в архив, а gzip уменьшает его размер
+    progress_penalty: 0
+  - level: tools
+    text: передай tar флаги создания, gzip сжатия и имя архива через -f, затем укажи каталог сайта
+    progress_penalty: 5
+  - level: solution
+    text: используй команду tar -czf /var/backups/site.tar.gz /var/www/html
+    progress_penalty: 15
+success_explanation: tar создал архив с gzip сжатием, сохранил его по указанному пути и включил каталог сайта

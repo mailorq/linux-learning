@@ -1,0 +1,39 @@
+id: logging.filter_nginx_errors
+title: сохранить ошибки nginx из журнала
+level: advanced
+topic: logging
+role: root@ubuntu-srv-01:~#
+objective: нужно отфильтровать сообщения nginx со словом error без учета регистра и сохранить результат вместе с ошибками команды
+command_rules:
+  - executable: journalctl
+    value_flags: [-u]
+    required_flags: [-u]
+    flag_descriptions:
+      "-u": ограничивает вывод сообщениями выбранного юнита
+    required_arguments: [nginx]
+    allow_extra_arguments: false
+  - executable: grep
+    required_flags: [-i]
+    flag_descriptions:
+      "-i": выполняет поиск без учета регистра
+    required_arguments: [error]
+    required_redirections:
+      - source_fd: 1
+        operator: ">"
+        target: /var/log/nginx-errors.log
+      - source_fd: 2
+        operator: ">&"
+        target: "1"
+    allow_extra_arguments: false
+    allow_extra_redirections: false
+hints:
+  - level: concept
+    text: journalctl читает журнал systemd, пайп передает его вывод grep, перенаправление сохраняет результат в файл
+    progress_penalty: 0
+  - level: tools
+    text: понадобятся journalctl с флагом -u, grep с флагом -i и перенаправления > и 2>&1
+    progress_penalty: 5
+  - level: solution
+    text: используй команду journalctl -u nginx | grep -i error > /var/log/nginx-errors.log 2>&1
+    progress_penalty: 15
+success_explanation: journalctl ограничил журнал юнитом nginx, grep нашел error в любом регистре, > записал совпадения, а 2>&1 направил туда же ошибки grep

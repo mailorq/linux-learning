@@ -1,0 +1,22 @@
+id: services.restart_nginx
+title: перезапустить nginx
+level: intermediate
+topic: services
+role: root@ubuntu-srv-01:~#
+objective: нужно применить новое состояние сервиса nginx после изменения конфигурации
+command_rules:
+  - executable: systemctl
+    required_subcommands: [restart]
+    required_arguments: [nginx]
+    allow_extra_arguments: false
+hints:
+  - level: concept
+    text: systemd управляет службами как юнитами и принимает действие перед именем юнита
+    progress_penalty: 0
+  - level: tools
+    text: используй systemctl, действие restart и имя юнита nginx
+    progress_penalty: 5
+  - level: solution
+    text: используй команду systemctl restart nginx
+    progress_penalty: 15
+success_explanation: systemctl передал менеджеру systemd запрос на перезапуск юнита nginx

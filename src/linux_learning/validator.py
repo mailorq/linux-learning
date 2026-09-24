@@ -14,6 +14,7 @@ class IssueKind(StrEnum):
     MISSING_FLAG = "missing_flag"
     FORBIDDEN_FLAG = "forbidden_flag"
     MISSING_ARGUMENT = "missing_argument"
+    ARGUMENT_ORDER = "argument_order"
     EXTRA_ARGUMENT = "extra_argument"
     MISSING_REDIRECTION = "missing_redirection"
     EXTRA_REDIRECTION = "extra_redirection"
@@ -110,11 +111,14 @@ def _validate_segment(
             )
         )
 
+    expected_arguments = (*rule.required_subcommands, *rule.required_arguments)
     remaining = list(segment.positionals)
-    for argument in (*rule.required_subcommands, *rule.required_arguments):
+    missing_arguments = False
+    for argument in expected_arguments:
         if argument in remaining:
             remaining.remove(argument)
         else:
+            missing_arguments = True
             issues.append(
                 ValidationIssue(
                     IssueKind.MISSING_ARGUMENT,
@@ -122,6 +126,19 @@ def _validate_segment(
                     index,
                 )
             )
+    if (
+        expected_arguments
+        and not missing_arguments
+        and not _is_subsequence_arguments(expected_arguments, segment.positionals)
+    ):
+        issues.append(
+            ValidationIssue(
+                IssueKind.ARGUMENT_ORDER,
+                "позиционные аргументы указаны не в требуемом порядке: "
+                + " ".join(expected_arguments),
+                index,
+            )
+        )
     if remaining and not rule.allow_extra_arguments:
         issues.append(
             ValidationIssue(
@@ -181,6 +198,14 @@ def _is_subsequence(
     position = 0
     for item in sequence:
         if position < len(candidate) and candidate[position] == item:
+            position += 1
+    return position == len(candidate)
+
+
+def _is_subsequence_arguments(candidate: tuple[str, ...], sequence: tuple[str, ...]) -> bool:
+    position = 0
+    for argument in sequence:
+        if position < len(candidate) and candidate[position] == argument:
             position += 1
     return position == len(candidate)
 

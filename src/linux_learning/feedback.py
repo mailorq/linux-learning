@@ -33,6 +33,7 @@ _ISSUE_TITLES = {
     IssueKind.MISSING_FLAG: "пропущен обязательный флаг",
     IssueKind.FORBIDDEN_FLAG: "использован запрещенный флаг",
     IssueKind.MISSING_ARGUMENT: "пропущен обязательный аргумент",
+    IssueKind.ARGUMENT_ORDER: "неверный порядок аргументов",
     IssueKind.EXTRA_ARGUMENT: "лишний аргумент",
     IssueKind.MISSING_REDIRECTION: "пропущено перенаправление",
     IssueKind.EXTRA_REDIRECTION: "лишнее перенаправление",
@@ -42,7 +43,7 @@ _ISSUE_TITLES = {
 def build_feedback(result: ValidationResult, scenario: Scenario) -> Feedback:
     if not result.valid:
         if not result.issues:
-            raise ValueError("для оишбочного результата отсутствуют причины")
+            raise ValueError("для ошибочного результата отсутствуют причины")
         title = _ISSUE_TITLES[result.issues[0].kind]
         return Feedback(
             kind=FeedbackKind.ERROR,
